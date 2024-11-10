@@ -1,28 +1,8 @@
 package pack;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.DoubleStream;
 
 public class DataAnalyzerService {
-
-//    public List<Item> detectOutliers(Map<String, Item> itemsMap) {
-//        List<Integer> revenueValues = itemsMap.values().stream()
-//                .map(Item::getRevenue)
-//                .collect(Collectors.toList());
-//
-//        List<Integer> taxSumValues = itemsMap.values().stream()
-//                .flatMap(item -> item.getTaxSums().stream())
-//                .collect(Collectors.toList());
-//
-//        Quartiles revenueQuartiles = calculateQuartiles(revenueValues);
-//        Quartiles taxSumQuartiles = calculateQuartiles(taxSumValues);
-//
-//        return itemsMap.values().stream()
-//                .filter(item -> isOutlier(item.getRevenue(), revenueQuartiles) ||
-//                        item.getTaxSums().stream().anyMatch(taxSum -> isOutlier(taxSum, taxSumQuartiles)))
-//                .collect(Collectors.toList());
-//    }
 
     // Выбросы во внутренних границах
     public static boolean isOutlier(int value, Quartiles quartiles) {
@@ -63,17 +43,6 @@ public class DataAnalyzerService {
             this.q1 = q1;
             this.q3 = q3;
             this.iqr = iqr;
-        }
-    }
-
-    public void printOutliers(List<Item> outliers) {
-        System.out.println("Detected Outliers:");
-        for (Item item : outliers) {
-            System.out.println("INN: " + item.getINN());
-            System.out.println("Revenue: " + item.getRevenue());
-            System.out.println("Tax Names: " + item.getTaxNames());
-            System.out.println("Tax Sums: " + item.getTaxSums());
-            System.out.println("-----------------------------");
         }
     }
 }

@@ -1,8 +1,8 @@
 
 package pack;
 
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipFile;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -11,7 +11,6 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
@@ -31,9 +30,7 @@ public class XmlParserService {
     public Map<String, Item> parseZipFile(String zipFilePath) throws Exception {
         Map<String, Item> items = new HashMap<>();
         try (ZipFile zipFile = new ZipFile(zipFilePath)) {
-            Enumeration<ZipArchiveEntry> entries = zipFile.getEntries();
-            while (entries.hasMoreElements()) {
-                ZipArchiveEntry entry = entries.nextElement();
+            for (ZipEntry entry : Collections.list(zipFile.entries())) {
                 if (entry.getName().endsWith(".xml") && !entry.getName().startsWith("__MACOSX")) {
                     try (InputStream inputStream = zipFile.getInputStream(entry)) {
                         items.putAll(parseXml(inputStream));

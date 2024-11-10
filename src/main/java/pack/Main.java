@@ -2,10 +2,8 @@ package pack;
 
 import javax.swing.*;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 import java.util.stream.Collectors;
 
 import pack.DataAnalyzerService.Quartiles;
@@ -14,13 +12,13 @@ import static pack.DataAnalyzerService.isOutlier;
 
 public class Main {
 
-    public static int sumOfArray(Vector<Integer> vec) {
-        return vec.stream().reduce(0, Integer::sum);
-    }
     public static void main(String[] args) {
         try {
             String[] filePaths = getFilePaths();
-
+            if (filePaths == null) {
+                System.out.println("File path is empty");
+                return;
+            }
             XmlParserService parserService = new XmlParserService();
             Map<String, Item> items = parserService.parseFiles(filePaths);
             System.out.println("Parse is done");
@@ -42,10 +40,6 @@ public class Main {
                     .filter(item -> isOutlier(item.getRevenue(), revenueQuartiles))
                     .collect(Collectors.toList());
             List<Item> taxSumOutliers = items.values().stream()
-                    .filter(item -> item.getTaxSums().stream()
-                    .anyMatch(taxSum -> isOutlier(taxSum, taxSumQuartiles)))
-                    .collect(Collectors.toList());
-            List<Item> taxSumOutliersWithoutAllTaxSums = items.values().stream()
                     .flatMap(item -> item.getTaxSums().stream()
                             .filter(taxSum -> isOutlier(taxSum, taxSumQuartiles))
                             .map(taxSum -> {
@@ -62,7 +56,7 @@ public class Main {
 
             // Graphics
             ChartService chartService = new ChartService();
-            chartService.generateCharts(revenueOutliers, taxSumOutliersWithoutAllTaxSums);
+            chartService.generateCharts(revenueOutliers, taxSumOutliers);
 
         } catch (Exception e) {
             e.printStackTrace();
