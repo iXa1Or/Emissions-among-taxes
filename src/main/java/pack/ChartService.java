@@ -12,7 +12,7 @@ import java.util.List;
 
 public class ChartService {
 
-    public void generateCharts(List<Item> outliers) {
+    public void generateCharts(List<Item> revenueOutliers, List<Item> taxSumOutliers) {
         JFrame frame = new JFrame("Outliers Charts");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
@@ -20,9 +20,13 @@ public class ChartService {
         XYSeries revenueSeries = new XYSeries("Revenue Outliers");
         XYSeries taxSumSeries = new XYSeries("Tax Sum Outliers");
 
-        for (Item item : outliers) {
+        for (Item item : revenueOutliers) {
             double inn = Double.parseDouble(item.getINN());
             revenueSeries.add(inn, item.getRevenue());
+        }
+
+        for (Item item : taxSumOutliers) {
+            double inn = Double.parseDouble(item.getINN());
             for (int i = 0; i < item.getTaxNames().size(); i++) {
                 taxSumSeries.add(inn, item.getTaxSums().get(i));
             }

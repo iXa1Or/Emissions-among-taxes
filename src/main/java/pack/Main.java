@@ -1,5 +1,5 @@
 package pack;
-import pack.DataAnalyzerService.*;
+
 import javax.swing.*;
 import java.io.File;
 import java.util.ArrayList;
@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.stream.Collectors;
 
+import pack.DataAnalyzerService.Quartiles;
+import static pack.DataAnalyzerService.calculateQuartiles;
 import static pack.DataAnalyzerService.isOutlier;
 
 public class Main {
@@ -23,9 +25,8 @@ public class Main {
             Map<String, Item> items = parserService.parseFiles(filePaths);
             System.out.println("Parse is done");
 
-            // Анализ выбросов
-            DataAnalyzerService analyzerService = new DataAnalyzerService();
 
+            // Анализ выбросов
             List<Integer> revenueValues = items.values().stream()
                     .map(Item::getRevenue)
                     .collect(Collectors.toList());
@@ -34,8 +35,8 @@ public class Main {
                     .flatMap(item -> item.getTaxSums().stream())
                     .collect(Collectors.toList());
 
-            Quartiles revenueQuartiles = analyzerService.calculateQuartiles(revenueValues);
-            Quartiles taxSumQuartiles = analyzerService.calculateQuartiles(taxSumValues);
+            Quartiles revenueQuartiles = calculateQuartiles(revenueValues);
+            Quartiles taxSumQuartiles = calculateQuartiles(taxSumValues);
 
             List<Item> revenueOutliers = items.values().stream()
                     .filter(item -> isOutlier(item.getRevenue(), revenueQuartiles))
@@ -44,24 +45,24 @@ public class Main {
                     .filter(item -> item.getTaxSums().stream()
                     .anyMatch(taxSum -> isOutlier(taxSum, taxSumQuartiles)))
                     .collect(Collectors.toList());
+            List<Item> taxSumOutliersWithoutAllTaxSums = items.values().stream()
+                    .flatMap(item -> item.getTaxSums().stream()
+                            .filter(taxSum -> isOutlier(taxSum, taxSumQuartiles))
+                            .map(taxSum -> {
+                                Item outlierItem = new Item();
+                                outlierItem.setINN(item.getINN());
+                                outlierItem.setRevenue(item.getRevenue());
+                                outlierItem.addTaxName(item.getTaxNames().get(item.getTaxSums().indexOf(taxSum)));
+                                outlierItem.addTaxSum(taxSum);
+                                return outlierItem;
+                            }))
+                    .collect(Collectors.toList());
 
-            List<Item> outliers = analyzerService.detectOutliers(items);
             System.out.println("Analyze is done");
 
-            List<Item> revMoreTaxSum = new ArrayList<>();
-            List<Item> revLessTaxSum = new ArrayList<>();
-            for (Item item : outliers) {
-                if (sumOfArray(item.getTaxSums()) > item.getRevenue()) {
-                    revMoreTaxSum.add(item);
-                }
-                else {
-                    revLessTaxSum.add(item);
-                }
-            }
-//            analyzerService.printOutliers(outliers);
-
+            // Graphics
             ChartService chartService = new ChartService();
-            chartService.generateCharts(outliers);
+            chartService.generateCharts(revenueOutliers, taxSumOutliersWithoutAllTaxSums);
 
         } catch (Exception e) {
             e.printStackTrace();
