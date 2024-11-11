@@ -16,12 +16,11 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-//            String[] filePaths = getFilePaths();
-//            if (filePaths == null) {
-//                System.out.println("File path is empty");
-//                return;
-//            }
-            String[] filePaths = {"/Users/arseniy/Downloads/Source_lab6.3/learningFiles.zip"};
+            String[] filePaths = getFilePaths();
+            if (filePaths == null) {
+                System.out.println("File path is empty");
+                return;
+            }
             Map<String, Item> items = parseFiles(filePaths);
             System.out.println("Parse is done");
 
@@ -31,8 +30,7 @@ public class Main {
                             .collect(Collectors.toList())
             );
 
-            // добавляет в объекты только те значения налогов, которые выбросы
-            // остальные отбрасывает
+            // добавляет в объекты только те значения налогов, которые выбросы остальные отбрасывает
             List<Item> taxSumOutliers = items.values().stream()
                     .filter(item -> item.getTaxSums().stream()
                             .anyMatch(taxSum -> isOutlier(taxSum, taxSumQuartiles)))
@@ -60,8 +58,11 @@ public class Main {
 
             BufferedWriter innOutliersFile = new BufferedWriter(new FileWriter("/Users/arseniy/Documents/IntelliJ IDEA Projects/Lab6.3_VM_BigData/src/main/resources/inn_outliers.txt"));
             for (Item item : taxSumOutliers) {
-                innOutliersFile.write(item.getINN() + "\n");
+                innOutliersFile.write(item.getINN());
+                innOutliersFile.newLine();
             }
+            innOutliersFile.close();
+            System.out.println("The data has been uploaded to a file");
 
             // Graphics
             ChartService chartService = new ChartService();
@@ -74,7 +75,7 @@ public class Main {
     public static String[] getFilePaths() {
         JFileChooser fileChooser = new JFileChooser();
 
-        fileChooser.setCurrentDirectory(new File("/Users/arseniy/Downloads/Source_lab6.3"));
+        fileChooser.setCurrentDirectory(new File("~/Downloads"));
         fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         fileChooser.setMultiSelectionEnabled(true);
 

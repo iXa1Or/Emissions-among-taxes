@@ -18,10 +18,6 @@ public class Item {
         this.INN = INN;
     }
 
-    public int getRevenue() {
-        return Revenue;
-    }
-
     public void setRevenue(int Revenue) {
         this.Revenue = Revenue;
     }
@@ -68,12 +64,4 @@ public class Item {
         return Objects.hash(INN, Revenue, TaxNames, TaxSums);
     }
 
-    public void print() {
-        System.out.println(
-                "INN: " + this.INN
-                + "\nRevenue: " + this.Revenue
-                + "\nTaxNames: " + this.TaxNames
-                + "\nTaxSums: " + this.TaxSums
-        );
-    }
 }
