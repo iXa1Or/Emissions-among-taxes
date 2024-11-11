@@ -1,7 +1,8 @@
 package pack;
 
 import javax.swing.*;
-import java.io.File;
+import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -9,54 +10,62 @@ import java.util.stream.Collectors;
 import pack.DataAnalyzerService.Quartiles;
 import static pack.DataAnalyzerService.calculateQuartiles;
 import static pack.DataAnalyzerService.isOutlier;
+import static pack.XmlParserService.parseFiles;
 
 public class Main {
 
     public static void main(String[] args) {
         try {
-            String[] filePaths = getFilePaths();
-            if (filePaths == null) {
-                System.out.println("File path is empty");
-                return;
-            }
-            XmlParserService parserService = new XmlParserService();
-            Map<String, Item> items = parserService.parseFiles(filePaths);
+//            String[] filePaths = getFilePaths();
+//            if (filePaths == null) {
+//                System.out.println("File path is empty");
+//                return;
+//            }
+            String[] filePaths = {"/Users/arseniy/Downloads/Source_lab6.3/learningFiles.zip"};
+            Map<String, Item> items = parseFiles(filePaths);
             System.out.println("Parse is done");
 
+            Quartiles taxSumQuartiles = calculateQuartiles(
+                    items.values().stream()
+                            .flatMap(item -> item.getTaxSums().stream())
+                            .collect(Collectors.toList())
+            );
 
-            // Анализ выбросов
-            List<Integer> revenueValues = items.values().stream()
-                    .map(Item::getRevenue)
-                    .collect(Collectors.toList());
-
-            List<Integer> taxSumValues = items.values().stream()
-                    .flatMap(item -> item.getTaxSums().stream())
-                    .collect(Collectors.toList());
-
-            Quartiles revenueQuartiles = calculateQuartiles(revenueValues);
-            Quartiles taxSumQuartiles = calculateQuartiles(taxSumValues);
-
-            List<Item> revenueOutliers = items.values().stream()
-                    .filter(item -> isOutlier(item.getRevenue(), revenueQuartiles))
-                    .collect(Collectors.toList());
+            // добавляет в объекты только те значения налогов, которые выбросы
+            // остальные отбрасывает
             List<Item> taxSumOutliers = items.values().stream()
-                    .flatMap(item -> item.getTaxSums().stream()
-                            .filter(taxSum -> isOutlier(taxSum, taxSumQuartiles))
-                            .map(taxSum -> {
-                                Item outlierItem = new Item();
-                                outlierItem.setINN(item.getINN());
-                                outlierItem.setRevenue(item.getRevenue());
-                                outlierItem.addTaxName(item.getTaxNames().get(item.getTaxSums().indexOf(taxSum)));
-                                outlierItem.addTaxSum(taxSum);
-                                return outlierItem;
-                            }))
+                    .filter(item -> item.getTaxSums().stream()
+                            .anyMatch(taxSum -> isOutlier(taxSum, taxSumQuartiles)))
+                    .peek(item -> {
+                        List<Integer> outlierTaxSums = new ArrayList<>();
+                        List<String> outlierTaxNames = new ArrayList<>();
+
+                        for (int i = 0; i < item.getTaxSums().size(); i++) {
+                            int taxSum = item.getTaxSums().get(i);
+                            if (isOutlier(taxSum, taxSumQuartiles)) {
+                                outlierTaxSums.add(taxSum);
+                                outlierTaxNames.add(item.getTaxNames().get(i));
+                            }
+                        }
+
+                        item.setTaxSums(outlierTaxSums);
+                        item.setTaxNames(outlierTaxNames);
+                    })
                     .collect(Collectors.toList());
 
-            System.out.println("Analyze is done");
+            System.out.println("Analyze is done."
+                    + "\nTotal items: " + items.size()
+                    + "\nTax Sum Outliers size = " + taxSumOutliers.size()
+            );
+
+            BufferedWriter innOutliersFile = new BufferedWriter(new FileWriter("/Users/arseniy/Documents/IntelliJ IDEA Projects/Lab6.3_VM_BigData/src/main/resources/inn_outliers.txt"));
+            for (Item item : taxSumOutliers) {
+                innOutliersFile.write(item.getINN() + "\n");
+            }
 
             // Graphics
             ChartService chartService = new ChartService();
-            chartService.generateCharts(revenueOutliers, taxSumOutliers);
+            chartService.generateCharts(taxSumOutliers);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -65,7 +74,7 @@ public class Main {
     public static String[] getFilePaths() {
         JFileChooser fileChooser = new JFileChooser();
 
-        fileChooser.setCurrentDirectory(new File("/Users/arseniy/Downloads/"));
+        fileChooser.setCurrentDirectory(new File("/Users/arseniy/Downloads/Source_lab6.3"));
         fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         fileChooser.setMultiSelectionEnabled(true);
 

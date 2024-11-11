@@ -12,36 +12,22 @@ import java.util.List;
 
 public class ChartService {
 
-    public void generateCharts(List<Item> revenueOutliers, List<Item> taxSumOutliers) {
+    public void generateCharts(List<Item> taxSumOutliers) {
         JFrame frame = new JFrame("Outliers Charts");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
 
-        XYSeries revenueSeries = new XYSeries("Revenue Outliers");
         XYSeries taxSumSeries = new XYSeries("Tax Sum Outliers");
 
-        for (Item item : revenueOutliers) {
-            double inn = Double.parseDouble(item.getINN());
-            revenueSeries.add(inn, item.getRevenue());
-        }
-
         for (Item item : taxSumOutliers) {
-            double inn = Double.parseDouble(item.getINN());
+            long inn = Long.parseLong(item.getINN());
             for (int i = 0; i < item.getTaxNames().size(); i++) {
                 taxSumSeries.add(inn, item.getTaxSums().get(i));
             }
         }
 
-        XYSeriesCollection revenueDataset = new XYSeriesCollection(revenueSeries);
         XYSeriesCollection taxSumDataset = new XYSeriesCollection(taxSumSeries);
 
-        JFreeChart revenueChart = ChartFactory.createScatterPlot(
-                "Revenue Outliers",
-                "INN",
-                "Revenue",
-                revenueDataset,
-                PlotOrientation.VERTICAL,
-                true, true, false);
 
         JFreeChart taxSumChart = ChartFactory.createScatterPlot(
                 "Tax Sum Outliers",
@@ -51,10 +37,8 @@ public class ChartService {
                 PlotOrientation.VERTICAL,
                 true, true, false);
 
-        ChartPanel revenueChartPanel = new ChartPanel(revenueChart);
         ChartPanel taxSumChartPanel = new ChartPanel(taxSumChart);
 
-        frame.add(revenueChartPanel);
         frame.add(taxSumChartPanel);
 
         frame.pack();

@@ -16,7 +16,7 @@ import java.util.*;
 
 public class XmlParserService {
 
-    public Map<String, Item> parseFiles(String[] filePaths) throws Exception {
+    public static Map<String, Item> parseFiles(String[] filePaths) throws Exception {
         Map<String, Item> items = new HashMap<>();
         for (String path : filePaths) {
             if (path.endsWith(".zip")) {
@@ -27,7 +27,7 @@ public class XmlParserService {
         }
         return items;
     }
-    public Map<String, Item> parseZipFile(String zipFilePath) throws Exception {
+    public static Map<String, Item> parseZipFile(String zipFilePath) throws Exception {
         Map<String, Item> items = new HashMap<>();
         try (ZipFile zipFile = new ZipFile(zipFilePath)) {
             for (ZipEntry entry : Collections.list(zipFile.entries())) {
@@ -41,7 +41,7 @@ public class XmlParserService {
         return items;
     }
 
-    private Map<String, Item> parseXml(InputStream inputStream) throws Exception {
+    private static Map<String, Item> parseXml(InputStream inputStream) throws Exception {
         Map<String, Item> items = new HashMap<>();
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
