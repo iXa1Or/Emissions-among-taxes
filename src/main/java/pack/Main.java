@@ -5,6 +5,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import pack.DataAnalyzerService.Quartiles;
@@ -33,14 +34,14 @@ public class Main {
             // добавляет в объекты только те значения налогов, которые выбросы остальные отбрасывает
             List<Item> taxSumOutliers = items.values().stream()
                     .filter(item -> item.getTaxSums().stream()
-                            .anyMatch(taxSum -> isOutlier(taxSum, taxSumQuartiles)))
+                            .anyMatch(taxSum -> isOutlier(taxSum, taxSumQuartiles, 1.5)))
                     .peek(item -> {
                         List<Integer> outlierTaxSums = new ArrayList<>();
                         List<String> outlierTaxNames = new ArrayList<>();
 
                         for (int i = 0; i < item.getTaxSums().size(); i++) {
                             int taxSum = item.getTaxSums().get(i);
-                            if (isOutlier(taxSum, taxSumQuartiles)) {
+                            if (isOutlier(taxSum, taxSumQuartiles, 2)) {
                                 outlierTaxSums.add(taxSum);
                                 outlierTaxNames.add(item.getTaxNames().get(i));
                             }
@@ -56,7 +57,8 @@ public class Main {
                     + "\nTax Sum Outliers size = " + taxSumOutliers.size()
             );
 
-            BufferedWriter innOutliersFile = new BufferedWriter(new FileWriter("/Users/arseniy/Documents/IntelliJ IDEA Projects/Lab6.3_VM_BigData/src/main/resources/inn_outliers.txt"));
+            String pathToInnOutliers = Objects.requireNonNull(Main.class.getResource("/inn_outliers.txt")).getPath();
+            BufferedWriter innOutliersFile = new BufferedWriter(new FileWriter(pathToInnOutliers));
             for (Item item : taxSumOutliers) {
                 innOutliersFile.write(item.getINN());
                 innOutliersFile.newLine();
