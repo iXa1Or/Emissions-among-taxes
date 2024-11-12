@@ -5,9 +5,9 @@ import java.util.*;
 public class DataAnalyzerService {
 
     // Выбросы во внутренних границах
-    public static boolean isOutlier(int value, Quartiles quartiles) {
-        double innerLowerBound = quartiles.q1 - 1.5 * quartiles.iqr;
-        double innerUpperBound = quartiles.q3 + 1.5 * quartiles.iqr;
+    public static boolean isOutlier(int value, Quartiles quartiles, double range) {
+        double innerLowerBound = quartiles.q1 - range * quartiles.iqr;
+        double innerUpperBound = quartiles.q3 + range * quartiles.iqr;
         return value < innerLowerBound || value > innerUpperBound;
     }
 
